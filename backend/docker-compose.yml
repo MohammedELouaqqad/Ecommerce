@@ -1,20 +1,35 @@
 services:
   app:
-    image: app
+    image: ecommerce-backend  # Nom plus propre que "app"
     build: .
     ports:
-      - 8080:8080
+      - 8080:${SERVER_PORT}
     environment:
-      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/Ecommerce?useSSL=false&allowPublicKeyRetrieval=true
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: 123456
-      AWS_S3_ENABLED: FALSE
+      # On utilise bien la variable pour le nom de la base de données !
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/${DATABASE_NAME}?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: ${SPRING_DATASOURCE_USERNAME}
+      SPRING_DATASOURCE_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}
+      AWS_S3_ENABLED: "false"
     depends_on:
-      - mysqldb
+      mysqldb:
+        condition: service_healthy  # Attend que MySQL soit VRAIMENT prêt
+    restart: on-failure  # Si Spring crash au démarrage, Docker le relance
+
   mysqldb:
     image: mysql:8.0
     ports:
       - 3307:3306
     environment:
-      MYSQL_DATABASE: Ecommerce
-      MYSQL_ROOT_PASSWORD: 123456
+      MYSQL_DATABASE: ${DATABASE_NAME}
+      MYSQL_ROOT_PASSWORD: ${SPRING_DATASOURCE_PASSWORD}  # Synchronisé avec l'app !
+    volumes:
+      - mysql_data:/var/lib/mysql  # Sauvegarde les données même si tu supprimes le conteneur
+    healthcheck:                   # Best Practice pour éviter les crashes au démarrage
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+# Déclaration du volume pour la persistance des données
+volumes:
+  mysql_data:
