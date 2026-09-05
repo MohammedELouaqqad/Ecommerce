@@ -1,0 +1,20 @@
+services:
+  app:
+    image: app
+    build: .
+    ports:
+      - 8080:8080
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/Ecommerce?useSSL=false&allowPublicKeyRetrieval=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: 123456
+      AWS_S3_ENABLED: FALSE
+    depends_on:
+      - mysqldb
+  mysqldb:
+    image: mysql:8.0
+    ports:
+      - 3307:3306
+    environment:
+      MYSQL_DATABASE: Ecommerce
+      MYSQL_ROOT_PASSWORD: 123456

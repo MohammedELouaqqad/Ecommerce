@@ -1,0 +1,11 @@
+@import "tailwindcss";
+
+@theme {
+  /* Tes couleurs sémantiques (Design System) */
+  --color-primary: #6366f1; /* Violet/Indigo pour les actions principales */
+  --color-primary-hover: #4f46e5;
+  --color-danger: #ef4444; /* Rouge pour supprimer */
+  --color-danger-hover: #dc2626;
+  --color-success: #22c55e; /* Vert pour valider */
+  --color-background: #f3f4f6; /* Gris clair pour le fond de l'app */
+}
