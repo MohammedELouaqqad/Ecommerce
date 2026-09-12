@@ -1,5 +1,5 @@
 // src/pages/Orders.jsx
-import { useContext, useEffect, useState } from "react";
+import { useContext, useEffect, useMemo, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import { UserContext } from "../context/UserContext";
 import { getAllOrders, updateOrderStatus } from "../services/orderService";
@@ -41,9 +41,13 @@ function Orders() {
 
   // 3. BEST PRACTICE : On filtre AVANT de mapper !
   // Si l'utilisateur est Admin, il voit tout. Sinon, il ne voit que ses commandes.
-  const visibleOrders = userConnecte?.role === 'Admin' 
-    ? orders 
-    : orders.filter(order => order.user?.id === userConnecte?.id);
+  const visibleOrders = useMemo(() => {
+    if (userConnecte?.role === 'Admin') {
+      return orders;
+    }
+    return orders.filter(order => order.user?.id === userConnecte?.id);
+  }, [orders, userConnecte?.id, userConnecte?.role]);
+
 
   if (loading) {
     return (

@@ -1,0 +1,41 @@
+2026-09-08T20:32:00.169+02:00  INFO 7580 --- [API_GATEWAY] [main] c.example.demo.BackendApplicationTests   : Starting BackendApplicationTests using Java 21.0.12.1 with PID 7580 (started by Expert Ask in C:\Users\Expert Ask\Downloads\Ecommerce-main\api-gateway)
+2026-09-08T20:32:00.180+02:00  INFO 7580 --- [API_GATEWAY] [main] c.example.demo.BackendApplicationTests   : No active profile set, falling back to 1 default profile: "default"
+2026-09-08T20:32:06.084+02:00  INFO 7580 --- [API_GATEWAY] [main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=78d2222e-a22e-3911-b08f-0dd803ee85b2
+2026-09-08T20:32:08.819+02:00  INFO 7580 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [After]
+2026-09-08T20:32:08.821+02:00  INFO 7580 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Before]
+2026-09-08T20:32:08.822+02:00  INFO 7580 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Between]
+2026-09-08T20:32:08.823+02:00  INFO 7580 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Cookie]
+2026-09-08T20:32:08.824+02:00  INFO 7580 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Header]
+2026-09-08T20:32:08.824+02:00  INFO 7580 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Host]
+2026-09-08T20:32:08.826+02:00  INFO 7580 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Method]
+2026-09-08T20:32:08.826+02:00  INFO 7580 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Path]
+2026-09-08T20:32:08.828+02:00  INFO 7580 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Query]
+2026-09-08T20:32:08.829+02:00  INFO 7580 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [ReadBody]
+2026-09-08T20:32:08.830+02:00  INFO 7580 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [RemoteAddr]
+2026-09-08T20:32:08.830+02:00  INFO 7580 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [XForwardedRemoteAddr]
+2026-09-08T20:32:08.831+02:00  INFO 7580 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Weight]
+2026-09-08T20:32:08.833+02:00  INFO 7580 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [CloudFoundryRouteService]
+2026-09-08T20:32:09.827+02:00  INFO 7580 --- [API_GATEWAY] [main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-09-08T20:32:10.557+02:00  INFO 7580 --- [API_GATEWAY] [main] c.example.demo.BackendApplicationTests   : Started BackendApplicationTests in 11.725 seconds (process running for 16.166)
+2026-09-08T20:32:33.240+02:00  INFO 15728 --- [API_GATEWAY] [main] com.example.demo.BackendApplication      : Starting BackendApplication using Java 21.0.12.1 with PID 15728 (C:\Users\Expert Ask\Downloads\Ecommerce-main\api-gateway\target\classes started by Expert Ask in C:\Users\Expert Ask\Downloads\Ecommerce-main\api-gateway)
+2026-09-08T20:32:33.244+02:00  INFO 15728 --- [API_GATEWAY] [main] com.example.demo.BackendApplication      : No active profile set, falling back to 1 default profile: "default"
+2026-09-08T20:32:35.029+02:00  INFO 15728 --- [API_GATEWAY] [main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=bcbb7421-a09b-39fa-93a4-28e9a9f10cca
+2026-09-08T20:32:36.293+02:00  INFO 15728 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [After]
+2026-09-08T20:32:36.293+02:00  INFO 15728 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Before]
+2026-09-08T20:32:36.294+02:00  INFO 15728 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Between]
+2026-09-08T20:32:36.294+02:00  INFO 15728 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Cookie]
+2026-09-08T20:32:36.295+02:00  INFO 15728 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Header]
+2026-09-08T20:32:36.295+02:00  INFO 15728 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Host]
+2026-09-08T20:32:36.295+02:00  INFO 15728 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Method]
+2026-09-08T20:32:36.296+02:00  INFO 15728 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Path]
+2026-09-08T20:32:36.296+02:00  INFO 15728 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Query]
+2026-09-08T20:32:36.297+02:00  INFO 15728 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [ReadBody]
+2026-09-08T20:32:36.297+02:00  INFO 15728 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [RemoteAddr]
+2026-09-08T20:32:36.298+02:00  INFO 15728 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [XForwardedRemoteAddr]
+2026-09-08T20:32:36.298+02:00  INFO 15728 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [Weight]
+2026-09-08T20:32:36.299+02:00  INFO 15728 --- [API_GATEWAY] [main] o.s.c.g.r.RouteDefinitionRouteLocator    : Loaded RoutePredicateFactory [CloudFoundryRouteService]
+2026-09-08T20:32:36.574+02:00  INFO 15728 --- [API_GATEWAY] [main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 1 endpoint beneath base path '/actuator'
+2026-09-08T20:32:37.092+02:00  INFO 15728 --- [API_GATEWAY] [main] o.s.b.web.embedded.netty.NettyWebServer  : Netty started on port 8081 (http)
+2026-09-08T20:32:37.161+02:00  INFO 15728 --- [API_GATEWAY] [main] com.example.demo.BackendApplication      : Started BackendApplication in 5.232 seconds (process running for 6.318)
+2026-09-08T20:33:54.836+02:00  INFO 15728 --- [API_GATEWAY] [SpringApplicationShutdownHook] o.s.b.w.embedded.netty.GracefulShutdown  : Commencing graceful shutdown. Waiting for active requests to complete
+2026-09-08T20:33:54.840+02:00  INFO 15728 --- [API_GATEWAY] [netty-shutdown] o.s.b.w.embedded.netty.GracefulShutdown  : Graceful shutdown complete

@@ -1,0 +1,30 @@
+package com.example.demo.Service;
+
+import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.stereotype.Service;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+
+
+
+
+@ConditionalOnProperty(
+    name = "spring.ai.openai.enabled",
+    havingValue = "true"
+)
+@Service
+public class AiService {
+
+    private final ChatClient chatClient;
+
+    public AiService(ChatClient.Builder builder){
+        chatClient = builder.build();
+    }
+
+
+    public String chat(String prompt){
+        return chatClient
+                .prompt(prompt)
+                .call()
+                .content();
+    }
+}

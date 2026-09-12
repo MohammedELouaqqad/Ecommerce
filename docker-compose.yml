@@ -1,0 +1,108 @@
+services:
+  # ==========================================
+  # 1. DATABASE (One container, 3 databases)
+  # ==========================================
+  mysqldb:
+    image: mysql:8.0
+    ports:
+      - 3307:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==========================================
+  # 2. USER SERVICE (Port 8081)
+  # ==========================================
+  user-service:
+    build: ./user-service
+    ports:
+      - 8081:8081
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/db_users?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+    restart: on-failure
+
+  # ==========================================
+  # 3. PRODUCT SERVICE (Port 8082)
+  # ==========================================
+  product-service:
+    build: ./product-service
+    ports:
+      - 8082:8082
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/db_products?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+    restart: on-failure
+
+  # ==========================================
+  # 4. ORDER SERVICE (Port 8083)
+  # ==========================================
+  order-service:
+    build: ./order-service
+    ports:
+      - 8083:8083
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/db_orders?createDatabaseIfNotExist=true
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: root
+    depends_on:
+      mysqldb:
+        condition: service_healthy
+    restart: on-failure
+
+  # ==========================================
+  # 5. AI SERVICE (Port 8084) - No Database
+  # ==========================================
+  ai-service:
+    build: ./ai-service
+    ports:
+      - 8084:8084
+    environment:
+      SERVER_PORT: 8084
+      OPEN_AI_KEY: "sk-fake-key-for-local-dev-123456789"
+      OPENAI_ENABLED: "false"
+    restart: on-failure
+
+  # ==========================================
+  # 6. S3 SERVICE (Port 8085) - No Database
+  # ==========================================
+  s3-service:
+    build: ./s3-service
+    ports:
+      - 8085:8085
+    environment:
+      AWS_S3_ENABLED: "false"
+      AWS_ACCESS_KEY: ${AWS_ACCESS_KEY:-}
+      AWS_SECRET_KEY: ${AWS_SECRET_KEY:-}
+      AWS_REGION: ${AWS_REGION:-}
+      AWS_BUCKET_NAME: ${AWS_BUCKET_NAME:-}
+    restart: on-failure
+
+  api-gateway:
+    build: ./api-gateway
+    ports:
+      - "8080:8080"
+    depends_on:
+      - user-service
+      - product-service
+      - order-service
+      - ai-service
+      - s3-service
+    restart: on-failure
+
+volumes:
+  mysql_data:

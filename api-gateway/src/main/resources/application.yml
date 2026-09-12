@@ -1,0 +1,115 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: api-gateway
+
+  cloud:
+    gateway:
+      server:
+        webflux:
+          routes:
+
+            # =====================================================
+            # USER SERVICE - 8081
+            # =====================================================
+
+            # Register / Login / Auth
+            - id: user-auth
+              uri: http://user-service:8081
+              predicates:
+                - Path=/api/auth/**
+
+
+            # =====================================================
+            # PRODUCT SERVICE - 8082
+            # =====================================================
+
+            # Admin - Product management
+            - id: product-admin
+              uri: http://product-service:8082
+              predicates:
+                - Path=/api/admin/addProduct
+                - Method=POST
+
+            - id: product-admin-edit
+              uri: http://product-service:8082
+              predicates:
+                - Path=/api/admin/editProduct/**
+                - Method=PUT
+
+            - id: product-admin-delete
+              uri: http://product-service:8082
+              predicates:
+                - Path=/api/admin/deleteProduct/**
+                - Method=DELETE
+
+            # Customer - Products
+            - id: product-all
+              uri: http://product-service:8082
+              predicates:
+                - Path=/api/customer/allProducts
+                - Method=GET
+
+            - id: product-single
+              uri: http://product-service:8082
+              predicates:
+                - Path=/api/customer/product/**
+                - Method=GET
+
+
+            # =====================================================
+            # ORDER SERVICE - 8083
+            # =====================================================
+
+            # GET all orders
+            - id: order-all
+              uri: http://order-service:8083
+              predicates:
+                - Path=/api/customer/allOrders
+                - Method=GET
+
+            # POST create order
+            - id: order-create
+              uri: http://order-service:8083
+              predicates:
+                - Path=/api/customer/addOrder
+                - Method=POST
+
+            # PUT edit order
+            - id: order-edit
+              uri: http://order-service:8083
+              predicates:
+                - Path=/api/admin/editOrder/**
+                - Method=PUT
+
+            
+
+
+            # =====================================================
+            # AI SERVICE - 8084
+            # =====================================================
+
+            - id: ai-chat
+              uri: http://ai-service:8084
+              predicates:
+                - Path=/api/customer/chat
+                - Method=POST
+
+
+            # =====================================================
+            # S3 SERVICE - 8085
+            # =====================================================
+
+            - id: s3-upload
+              uri: http://s3-service:8085
+              predicates:
+                - Path=/api/customer/upload
+                - Method=POST
+
+            - id: s3-download
+              uri: http://s3-service:8085
+              predicates:
+                - Path=/api/customer/download/**
+                - Method=GET
