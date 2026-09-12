@@ -1,6 +1,6 @@
 package com.example.demo.controller;
 
-import com.example.demo.Service.ProductService;
+import com.example.demo.service.ProductService;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
