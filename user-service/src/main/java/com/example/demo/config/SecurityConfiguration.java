@@ -40,6 +40,8 @@ public class SecurityConfiguration {
             .authorizeHttpRequests(
                 request -> request
 
+                    .requestMatchers("/api/auth/admin/**").hasRole("Admin")
+
                     .requestMatchers("/api/auth/**").permitAll()
                     
                     .requestMatchers("/api/customer/download/**").permitAll()
@@ -48,9 +50,6 @@ public class SecurityConfiguration {
 
                     .requestMatchers("/api/admin/**").hasRole("Admin")
 
-                    .requestMatchers("/api/auth/admin/**").hasRole("Admin")
-
-                    
 
 
 

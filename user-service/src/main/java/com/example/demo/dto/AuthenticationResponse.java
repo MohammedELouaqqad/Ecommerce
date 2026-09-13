@@ -1,7 +1,5 @@
 package com.example.demo.dto;
 
-import com.example.demo.models.User;
-
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,5 +12,5 @@ import lombok.NoArgsConstructor;
 public class AuthenticationResponse {
 
     private String token;
-    private User user;
+    private UserResponse user;
 }

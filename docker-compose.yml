@@ -27,6 +27,11 @@ services:
       SPRING_DATASOURCE_URL: jdbc:mysql://mysqldb:3306/db_users?createDatabaseIfNotExist=true
       SPRING_DATASOURCE_USERNAME: root
       SPRING_DATASOURCE_PASSWORD: root
+      # Premier Admin : lu depuis le fichier .env (non versionne), jamais ecrit ici
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:-}
+      # Obligatoire : docker compose refuse de demarrer si JWT_SECRET manque dans .env
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET doit etre defini dans .env}
     depends_on:
       mysqldb:
         condition: service_healthy
@@ -96,6 +101,8 @@ services:
     build: ./api-gateway
     ports:
       - "8080:8080"
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET doit etre defini dans .env}
     depends_on:
       - user-service
       - product-service

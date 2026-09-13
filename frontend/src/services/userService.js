@@ -15,7 +15,7 @@ export const getAllUsers = async () => {
 // Ajouter un utilisateur
 export const registerUser = async (userData) => {
   try {
-    const response = await api.post('/auth/register', userData);
+    const response = await api.post('/auth/admin/register', userData);
     return response.data;
   } catch (error) {
     console.error("Erreur lors de l'ajout de l'utilisateur:", error);

@@ -3,16 +3,16 @@ package com.example.demo.dto;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
-import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Getter
+// Used only by the Admin-only endpoint: unlike RegisterRequest, it carries a role.
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class RegisterRequest {
+public class AdminRegisterRequest {
     private String fullName;
     private String email;
+    private String role;
     private String password;
 }

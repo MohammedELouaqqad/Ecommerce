@@ -8,7 +8,7 @@ import { loginUser } from "../services/authService"; // Notre service !
 function Login() {
   const navigate = useNavigate();
   const { setUserConnecte } = useContext(UserContext);
-  const [formaData, setFormaData] = useState({ email: "", role: "Customer", password: "" });
+  const [formaData, setFormaData] = useState({ email: "", password: "" });
   const [loading, setLoading] = useState(false);
 
   const handleInputChange = (e) => {
@@ -49,19 +49,6 @@ function Login() {
         
         <Input label="Email" name="email" type="email" value={formaData.email} onChange={handleInputChange} placeholder="john@example.com" />
         
-        <div className="flex flex-col mt-4">
-          <label className="font-medium text-gray-700 mb-1">Role</label>
-          <select 
-            name="role" 
-            value={formaData.role} 
-            onChange={handleInputChange} 
-            className="border rounded-lg h-12 px-4 border-gray-300 focus:border-blue-500 outline-none bg-white"
-          >
-            <option value="Customer">Customer</option>
-            <option value="Admin">Admin</option>
-          </select>
-        </div>
-
         <Input label="Password" name="password" type="password" value={formaData.password} onChange={handleInputChange} placeholder="**********" />
         
         <button 

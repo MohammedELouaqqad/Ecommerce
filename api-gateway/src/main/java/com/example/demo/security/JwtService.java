@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import javax.crypto.SecretKey;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import io.jsonwebtoken.Claims;
@@ -16,8 +17,25 @@ import io.jsonwebtoken.security.Keys;
 @Service
 public class JwtService {
 
-    private static final String SECRET_KEY =
-            "aBY638xOVWcOF/0duj8ox+Jkum2VRgjz2yiXsp96qf8=";
+    private final SecretKey signingKey;
+
+    // The key comes from the JWT_SECRET environment variable. Startup fails if it
+    // is missing or too weak, rather than silently signing with a bad key.
+    public JwtService(@Value("${jwt.secret:}") String secret) {
+        if (secret == null || secret.isBlank()) {
+            throw new IllegalStateException("JWT_SECRET is not set: refusing to start without a signing key");
+        }
+        byte[] keyBytes;
+        try {
+            keyBytes = Decoders.BASE64.decode(secret);
+        } catch (RuntimeException e) {
+            throw new IllegalStateException("JWT_SECRET must be Base64-encoded");
+        }
+        if (keyBytes.length < 32) {
+            throw new IllegalStateException("JWT_SECRET must be at least 256 bits (32 bytes once decoded)");
+        }
+        this.signingKey = Keys.hmacShaKeyFor(keyBytes);
+    }
 
     // =========================
     // Extraction du username
@@ -95,8 +113,6 @@ public class JwtService {
 
     private SecretKey getSigningKey() {
 
-        byte[] keyBytes = Decoders.BASE64.decode(SECRET_KEY);
-
-        return Keys.hmacShaKeyFor(keyBytes);
+        return signingKey;
     }
 }
