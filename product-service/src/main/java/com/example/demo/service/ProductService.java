@@ -1,12 +1,16 @@
 package com.example.demo.service;
 
+import com.example.demo.dto.StockLine;
+import com.example.demo.exception.InsufficientStockException;
 import com.example.demo.models.ProductEntity;
 import com.example.demo.repository.ProductRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -80,26 +84,36 @@ public class ProductService {
         }
     }
 
-    public ResponseEntity<?> decreaseStock(Long id, Integer quantity){
-        try {
-            ProductEntity product = productRepository.findById(id)
-                    .orElseThrow();
-
-            if (quantity > product.getCountStock()) {
-                return ResponseEntity.badRequest()
-                        .body("Not enough stock");
+ 
+    // All-or-nothing: an insufficient line throws, which rolls back every
+    // decrement already made for this order.
+    @Transactional
+    public void reserveStock(List<StockLine> lines) {
+        for (StockLine line : sortedByProduct(lines)) {
+            if (productRepository.decrementIfAvailable(line.productId(), line.quantity()) == 0) {
+                throw new InsufficientStockException(line.productId());
             }
-
-            product.setCountStock(
-                    product.getCountStock() - quantity
-            );
-
-            productRepository.save(product);
-
-            return ResponseEntity.ok(product);
-            
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
         }
+    }
+
+    // Compensation for reserveStock, used when the order could not be saved.
+    @Transactional
+    public void releaseStock(List<StockLine> lines) {
+        for (StockLine line : sortedByProduct(lines)) {
+            productRepository.increment(line.productId(), line.quantity());
+        }
+    }
+
+    // A stable lock order prevents two concurrent orders [A, B] and [B, A] from deadlocking.
+    private static List<StockLine> sortedByProduct(List<StockLine> lines) {
+        if (lines == null || lines.isEmpty()) {
+            throw new IllegalArgumentException("No stock line provided");
+        }
+        for (StockLine line : lines) {
+            if (line.productId() == null || line.quantity() == null || line.quantity() <= 0) {
+                throw new IllegalArgumentException("Invalid stock line: " + line);
+            }
+        }
+        return lines.stream().sorted(Comparator.comparing(StockLine::productId)).toList();
     }
 }

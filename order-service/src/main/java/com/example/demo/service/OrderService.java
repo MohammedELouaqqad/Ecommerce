@@ -3,32 +3,42 @@ package com.example.demo.service;
 
 import com.example.demo.models.Order;
 import com.example.demo.models.OrderItem;
-import com.example.demo.repository.OrderItemRepository;
 import com.example.demo.repository.OrderRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.*;
 import com.example.demo.dto.ProductResponse;
+import com.example.demo.dto.StockLine;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestClient;
+import org.springframework.web.client.RestClientException;
 
 
 
 @Service
 public class OrderService {
 
-    @Autowired
-    private OrderRepository orderRepository;
+    private static final Logger log = LoggerFactory.getLogger(OrderService.class);
 
-    @Autowired
-    private OrderItemRepository orderItemRepository;
+    private static final String PRODUCT_SERVICE_URL = "http://product-service:8082";
+
+    private final OrderRepository orderRepository;
+
+    private final OrderPersistenceService orderPersistenceService;
 
     private final RestClient restClient;
 
-    public OrderService(RestClient restClient) {
+    public OrderService(OrderRepository orderRepository,
+                        OrderPersistenceService orderPersistenceService,
+                        RestClient restClient) {
+        this.orderRepository = orderRepository;
+        this.orderPersistenceService = orderPersistenceService;
         this.restClient = restClient;
     }
 
@@ -39,94 +49,101 @@ public class OrderService {
 
     public ResponseEntity<?> CreateOrder(Order newOrder) {
 
+        List<OrderItem> orderItems = newOrder.getOrderItems();
+        if (orderItems == null || orderItems.isEmpty()) {
+            return ResponseEntity.badRequest().body("Order must contain at least one item");
+        }
+        for (OrderItem orderItem : orderItems) {
+            if (orderItem.getProductId() == null
+                    || orderItem.getQuantite() == null
+                    || orderItem.getQuantite() <= 0) {
+                return ResponseEntity.badRequest()
+                        .body("Each item needs a productId and a positive quantite");
+            }
+        }
+
+        List<StockLine> stockLines = orderItems.stream()
+                .map(orderItem -> new StockLine(orderItem.getProductId(), orderItem.getQuantite()))
+                .toList();
+
         try {
-            newOrder.setOrderDate(LocalDate.now());
-            // 1. Check every product and its stock
-            for (OrderItem orderItem : newOrder.getOrderItems()) {
+            // 1. Price every item at the moment of purchase
+            double total = 0;
+
+            for (OrderItem orderItem : orderItems) {
 
                 ProductResponse product = restClient.get()
-                        .uri("http://product-service:8082/api/customer/product/"
+                        .uri(PRODUCT_SERVICE_URL + "/api/customer/product/"
                                 + orderItem.getProductId())
                         .retrieve()
                         .body(ProductResponse.class);
                 if (product == null) {
                     return ResponseEntity.notFound().build();
                 }
-                if (orderItem.getQuantite() > product.getCountStock()) {
-                    return ResponseEntity.badRequest()
-                            .body("Not enough stock for product "
-                                    + orderItem.getProductId());
-                }
-                // Price at the moment of purchase
-                orderItem.setPrice(product.getPrice());
 
-                // Total for this item
+                orderItem.setPrice(product.getPrice());
                 orderItem.setTotalPrice(
                         product.getPrice() * orderItem.getQuantite()
                 );
-            }
-
-            // 2. Calculate total order price
-            double total = 0;
-
-            for (OrderItem orderItem : newOrder.getOrderItems()) {
                 total += orderItem.getTotalPrice();
             }
 
+            newOrder.setOrderDate(LocalDate.now());
             newOrder.setTotalprice(total);
 
-            // 3. Save Order first
-            orderRepository.save(newOrder);
+            // 2. Reserve the stock of every item, all or nothing:
+            //    product-service answers 409 if any product is short.
+            restClient.post()
+                    .uri(PRODUCT_SERVICE_URL + "/api/internal/stock/reserve")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(stockLines)
+                    .retrieve()
+                    .toBodilessEntity();
 
-            // 4. Save OrderItems + decrease product stock
-            for (OrderItem orderItem : newOrder.getOrderItems()) {
+        } catch (HttpClientErrorException.NotFound e) {
+            return ResponseEntity.notFound().build();
+        } catch (HttpClientErrorException.Conflict e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(e.getResponseBodyAsString());
+        } catch (RestClientException e) {
+            log.error("Call to product-service failed", e);
+            return ResponseEntity.internalServerError().body("Error in the Server");
+        }
 
-                orderItem.setOrder(newOrder);
-
-                // Decrease stock in Product Service
-                restClient.put()
-                        .uri("http://product-service:8082/api/customer/decreaseStock/"
-                                + orderItem.getProductId()
-                                + "/"
-                                + orderItem.getQuantite())
-                        .retrieve()
-                        .toBodilessEntity();
-
-                // Save OrderItem
-                orderItemRepository.save(orderItem);
-            }
-
-            return ResponseEntity.ok(newOrder);
-
-        } catch (Exception e) {
-
-            e.printStackTrace();
-
-            return ResponseEntity
-                    .internalServerError()
-                    .body("Error in the Server");
+        // 3. Only once the stock is reserved, save the order and its items.
+        //    If that fails, give the reserved stock back (compensation).
+        try {
+            return ResponseEntity.ok(orderPersistenceService.save(newOrder));
+        } catch (RuntimeException e) {
+            log.error("Order could not be saved, releasing the reserved stock", e);
+            releaseStock(stockLines);
+            return ResponseEntity.internalServerError().body("Error in the Server");
         }
     }
 
-    public ResponseEntity<?> modifyOrder(Long id, Order order) {
+    private void releaseStock(List<StockLine> stockLines) {
         try {
-            Optional<Order> existingOrder = orderRepository.findById(id);
+            restClient.post()
+                    .uri(PRODUCT_SERVICE_URL + "/api/internal/stock/release")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .body(stockLines)
+                    .retrieve()
+                    .toBodilessEntity();
+        } catch (RestClientException e) {
+            // The stock stays decremented with no matching order: it needs a manual fix.
+            log.error("Stock release FAILED, manual correction needed for {}", stockLines, e);
+        }
+    }
 
-            if (existingOrder.isEmpty()) {
-                return ResponseEntity.notFound().build();
-            }
+    public ResponseEntity<?> modifyOrder( Long id, Order order) {
+        try{
+            Optional<Order> editOrder = orderRepository.findById(id);
+            editOrder.get().setStatus(order.getStatus());
+            orderRepository.save(editOrder.get());
 
-            Order editOrder = existingOrder.get();
-
-            editOrder.setStatus(order.getStatus());
-
-            orderRepository.save(editOrder);
-
-            return ResponseEntity.ok(editOrder);
-
-        } catch (Exception e) {
-            return ResponseEntity.internalServerError()
-                    .body("Error in the Server: " + e.getMessage());
+            return ResponseEntity.ok(editOrder.get());
+        }catch(Exception e){
+            return ResponseEntity.internalServerError().body("Error in the Server:"+e);
         }
     }
 }
