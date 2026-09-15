@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { createOrder } from "../services/orderService"; // Notre nouveau service
 
 function Cart() {
-  const { cartProducts, setCartProducts, userConnecte } = useContext(UserContext);
+  const { cartProducts, setCartProducts } = useContext(UserContext);
   const [orderItems, setOrderItems] = useState([]);
   const navigate = useNavigate();
 
@@ -60,11 +60,13 @@ function Cart() {
 
   // Utilisation du Service propre !
   const handleConfirmOrder = async () => {
+    // Le serveur impose le proprietaire, le statut et les prix : on n'envoie
+    // que ce que le client choisit reellement.
     const orderData = {
-      status: "Processing",
-      user: { id: userConnecte.id },
-      totalprice: totalPriceOrder,
-      orderItems: orderItems,
+      orderItems: orderItems.map((item) => ({
+        productId: item.product.id,
+        quantite: item.quantite,
+      })),
     };
 
     try {
