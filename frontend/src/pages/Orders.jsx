@@ -1,5 +1,5 @@
 // src/pages/Orders.jsx
-import { useContext, useEffect, useMemo, useState } from "react";
+import { useContext, useEffect, useState } from "react";
 import Sidebar from "../components/Sidebar";
 import { UserContext } from "../context/UserContext";
 import { getAllOrders, updateOrderStatus } from "../services/orderService";
@@ -39,14 +39,9 @@ function Orders() {
     }
   };
 
-  // 3. BEST PRACTICE : On filtre AVANT de mapper !
-  // Si l'utilisateur est Admin, il voit tout. Sinon, il ne voit que ses commandes.
-  const visibleOrders = useMemo(() => {
-    if (userConnecte?.role === 'Admin') {
-      return orders;
-    }
-    return orders.filter(order => order.user?.id === userConnecte?.id);
-  }, [orders, userConnecte?.id, userConnecte?.role]);
+  // 3. Le filtrage est fait par le serveur : un client ne recoit que ses propres
+  // commandes, un Admin les recoit toutes. Rien a filtrer ici.
+  const visibleOrders = orders;
 
 
   if (loading) {
@@ -81,7 +76,7 @@ function Orders() {
                 // La KEY est mise directement sur le <tr> !
                 <tr key={order.id} className="h-20 border-b border-gray-100 hover:bg-gray-50">
                   <td className="font-bold text-gray-800 p-2">#{order.id}</td>
-                  <td className="text-gray-600">{order.user?.fullName || "Unknown"}</td>
+                  <td className="text-gray-600">{order.customerEmail || "Unknown"}</td>
                   <td className="text-gray-600">${order.totalprice}</td>
                   <td className="p-4">
                     <select 

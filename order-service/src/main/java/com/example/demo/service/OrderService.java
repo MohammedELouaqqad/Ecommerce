@@ -28,6 +28,8 @@ public class OrderService {
 
     private static final String PRODUCT_SERVICE_URL = "http://product-service:8082";
 
+    private static final String INITIAL_STATUS = "Processing";
+
     private final OrderRepository orderRepository;
 
     private final OrderPersistenceService orderPersistenceService;
@@ -43,11 +45,13 @@ public class OrderService {
     }
 
 
-    public List<Order> getAllOrders() {
-        return orderRepository.findAll();
+    // Filtered in the database: a customer never receives other customers' orders.
+    public List<Order> getOrders(Long userId, boolean isAdmin) {
+        return isAdmin ? orderRepository.findAll() : orderRepository.findByUserId(userId);
     }
 
-    public ResponseEntity<?> CreateOrder(Order newOrder) {
+    // userId and customerEmail come from the identity headers set by the api-gateway.
+    public ResponseEntity<?> CreateOrder(Order newOrder, Long userId, String customerEmail) {
 
         List<OrderItem> orderItems = newOrder.getOrderItems();
         if (orderItems == null || orderItems.isEmpty()) {
@@ -61,6 +65,14 @@ public class OrderService {
                         .body("Each item needs a productId and a positive quantite");
             }
         }
+
+        // Everything that is not the customer's choice is decided here, never read from the body:
+        // a client-supplied id would make JPA overwrite an existing order instead of creating one.
+        newOrder.setId(null);
+        orderItems.forEach(orderItem -> orderItem.setId(null));
+        newOrder.setUserId(userId);
+        newOrder.setCustomerEmail(customerEmail);
+        newOrder.setStatus(INITIAL_STATUS);
 
         List<StockLine> stockLines = orderItems.stream()
                 .map(orderItem -> new StockLine(orderItem.getProductId(), orderItem.getQuantite()))

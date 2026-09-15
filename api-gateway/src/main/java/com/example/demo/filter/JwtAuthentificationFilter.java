@@ -19,6 +19,14 @@ import reactor.core.publisher.Mono;
 @Component
 public class JwtAuthentificationFilter implements WebFilter {
 
+    // Identity headers read by the downstream services. Only the gateway sets them,
+    // from the verified token: the services trust them instead of the request body.
+    public static final String USER_ID_HEADER = "X-User-Id";
+    public static final String USER_EMAIL_HEADER = "X-User-Email";
+    public static final String USER_ROLES_HEADER = "X-User-Roles";
+    private static final List<String> IDENTITY_HEADERS =
+            List.of(USER_ID_HEADER, USER_EMAIL_HEADER, USER_ROLES_HEADER);
+
     private final JwtService jwtService;
 
     public JwtAuthentificationFilter(JwtService jwtService) {
@@ -30,13 +38,19 @@ public class JwtAuthentificationFilter implements WebFilter {
             ServerWebExchange exchange,
             WebFilterChain chain) {
 
-        String authHeader = exchange.getRequest()
+        // A client could send these headers itself to pass as someone else:
+        // they are dropped from every request, whatever happens next.
+        ServerWebExchange stripped = exchange.mutate()
+                .request(request -> request.headers(headers -> IDENTITY_HEADERS.forEach(headers::remove)))
+                .build();
+
+        String authHeader = stripped.getRequest()
                 .getHeaders()
                 .getFirst(HttpHeaders.AUTHORIZATION);
 
         // Pas de JWT
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            return chain.filter(exchange);
+            return chain.filter(stripped);
         }
 
         String jwt = authHeader.substring(7);
@@ -50,6 +64,8 @@ public class JwtAuthentificationFilter implements WebFilter {
 
                 List<String> roles = jwtService.extractRoles(jwt);
 
+                String userId = jwtService.extractUserId(jwt);
+
                 List<SimpleGrantedAuthority> authorities = roles
                         .stream()
                         .map(SimpleGrantedAuthority::new)
@@ -62,8 +78,19 @@ public class JwtAuthentificationFilter implements WebFilter {
                                 authorities
                         );
 
+                // Tell the downstream services who is calling.
+                ServerWebExchange withIdentity = stripped.mutate()
+                        .request(request -> request.headers(headers -> {
+                            if (userId != null) {
+                                headers.set(USER_ID_HEADER, userId);
+                            }
+                            headers.set(USER_EMAIL_HEADER, userEmail);
+                            headers.set(USER_ROLES_HEADER, String.join(",", roles));
+                        }))
+                        .build();
+
                 return chain
-                        .filter(exchange)
+                        .filter(withIdentity)
                         .contextWrite(
                                 ReactiveSecurityContextHolder
                                         .withAuthentication(authentication)
@@ -77,16 +104,16 @@ public class JwtAuthentificationFilter implements WebFilter {
                     + e.getMessage()
             );
 
-            exchange.getResponse()
+            stripped.getResponse()
                     .setStatusCode(HttpStatus.UNAUTHORIZED);
 
-            return exchange.getResponse().setComplete();
+            return stripped.getResponse().setComplete();
         }
 
         // JWT présent mais invalide
-        exchange.getResponse()
+        stripped.getResponse()
                 .setStatusCode(HttpStatus.UNAUTHORIZED);
 
-        return exchange.getResponse().setComplete();
+        return stripped.getResponse().setComplete();
     }
 }

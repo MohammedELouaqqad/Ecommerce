@@ -11,6 +11,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import com.example.demo.models.User;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
@@ -59,6 +61,11 @@ public class JwtService {
                 .stream()
                 .map(authority -> authority.getAuthority())
                 .toList());
+
+        // Lets the api-gateway tell the other services which user is calling.
+        if (userDetails instanceof User user) {
+            extraClaims.put("userId", user.getId());
+        }
 
         return generateToken(extraClaims, userDetails);
     }

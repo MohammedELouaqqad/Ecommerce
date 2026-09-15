@@ -42,6 +42,10 @@ public class Order {
 
     private Long userId;
 
+    // Snapshot of the customer's email at purchase time, for display:
+    // user data belongs to user-service, which order-service does not query.
+    private String customerEmail;
+
 
     @OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
     @ToString.Exclude
