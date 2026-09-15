@@ -1,0 +1,24 @@
+# Ports de debug, a n'utiliser qu'en local et jamais en production.
+# Usage : docker compose -f docker-compose.yml -f docker-compose.debug.yml up -d
+#
+# Attention : republier ces ports permet d'appeler les services sans passer par
+# l'api-gateway, donc sans verification du jeton ni des roles.
+services:
+  mysqldb:
+    ports:
+      - 3307:3306
+  user-service:
+    ports:
+      - 8081:8081
+  product-service:
+    ports:
+      - 8082:8082
+  order-service:
+    ports:
+      - 8083:8083
+  ai-service:
+    ports:
+      - 8084:8084
+  s3-service:
+    ports:
+      - 8085:8085
